@@ -1,0 +1,5 @@
+-r requirements.txt
+pandas>=2.1.0
+rich>=13.7.0
+gunicorn>=21.2.0
+yara-python>=4.5.0
