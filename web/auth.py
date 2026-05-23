@@ -1,13 +1,21 @@
 """Web UI authentication."""
 
 import functools
-import os
 import secrets
 
-from flask import flash, redirect, render_template, request, session, url_for
+from flask import flash, redirect, request, session, url_for
 from werkzeug.security import check_password_hash
 
-from config import AUTH_ENABLED, WEB_API_KEY, WEB_AUTH_PASSWORD, WEB_AUTH_PASSWORD_HASH, WEB_AUTH_USERNAME
+from config import (
+    AUTH_ENABLED,
+    REGISTRATION_ENABLED,
+    REGISTRATION_INVITE_CODE,
+    WEB_API_KEY,
+    WEB_AUTH_PASSWORD,
+    WEB_AUTH_PASSWORD_HASH,
+    WEB_AUTH_USERNAME,
+)
+from storage.users_db import verify_user_password
 
 
 def login_required(view):
@@ -34,13 +42,29 @@ def login_required(view):
 def verify_credentials(username: str, password: str) -> bool:
     if not AUTH_ENABLED:
         return True
-    if username != WEB_AUTH_USERNAME:
+
+    if verify_user_password(username, password):
+        return True
+
+    # Fallback: env-based admin (before bootstrap or legacy config)
+    env_user = WEB_AUTH_USERNAME.strip().lower()
+    if not env_user or username.strip().lower() != env_user:
         return False
     if WEB_AUTH_PASSWORD_HASH:
         return check_password_hash(WEB_AUTH_PASSWORD_HASH, password)
     if WEB_AUTH_PASSWORD:
         return secrets.compare_digest(password, WEB_AUTH_PASSWORD)
     return False
+
+
+def registration_allowed() -> bool:
+    return AUTH_ENABLED and REGISTRATION_ENABLED
+
+
+def valid_invite_code(code: str) -> bool:
+    if not REGISTRATION_INVITE_CODE:
+        return False
+    return secrets.compare_digest(code.strip(), REGISTRATION_INVITE_CODE)
 
 
 def _valid_api_key() -> bool:

@@ -38,9 +38,13 @@ WEB_AUTH_PASSWORD = os.getenv("WEB_AUTH_PASSWORD", "")
 WEB_AUTH_PASSWORD_HASH = os.getenv("WEB_AUTH_PASSWORD_HASH", "")
 WEB_API_KEY = os.getenv("WEB_API_KEY", "")
 
-AUTH_ENABLED = bool(
-    WEB_AUTH_USERNAME and (WEB_AUTH_PASSWORD or WEB_AUTH_PASSWORD_HASH)
-)
+# Auth is on by default; set DISABLE_AUTH=true to turn off (local dev only)
+AUTH_ENABLED = os.getenv("DISABLE_AUTH", "").lower() != "true"
+
+# Team registration — requires invite code (no open public signup)
+ALLOW_REGISTRATION = os.getenv("ALLOW_REGISTRATION", "").lower() == "true"
+REGISTRATION_ENABLED = ALLOW_REGISTRATION
+REGISTRATION_INVITE_CODE = os.getenv("REGISTRATION_INVITE_CODE", "")
 
 DOMAIN_AGE_SUSPICIOUS_DAYS = int(os.getenv("DOMAIN_AGE_SUSPICIOUS_DAYS", "30"))
 DOMAIN_AGE_CRITICAL_DAYS = int(os.getenv("DOMAIN_AGE_CRITICAL_DAYS", "7"))

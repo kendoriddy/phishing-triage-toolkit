@@ -527,6 +527,22 @@ code.hash {
   color: var(--accent);
 }
 
+.login-footer-link {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.login-footer-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.login-footer-link a:hover {
+  text-decoration: underline;
+}
+
 .footer {
   text-align: center;
   padding: 1.5rem;

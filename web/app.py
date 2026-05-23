@@ -21,7 +21,11 @@ from config import (
 )
 from pipeline import load_report, run_triage
 from storage.ioc_db import get_recent_runs
-from web.auth import login_required, verify_credentials
+from storage.users_db import bootstrap_admin_from_env, create_user, init_users_db
+from web.auth import login_required, registration_allowed, valid_invite_code, verify_credentials
+
+init_users_db()
+bootstrap_admin_from_env()
 
 app = Flask(
     __name__,
@@ -50,14 +54,43 @@ def login():
         if verify_credentials(username, password):
             session.permanent = True
             session["logged_in"] = True
-            session["username"] = username
+            session["username"] = username.strip().lower()
             next_url = request.form.get("next") or request.args.get("next") or url_for("index")
             if not next_url.startswith("/"):
                 next_url = url_for("index")
             return redirect(next_url)
         flash("Invalid username or password.", "error")
 
-    return render_template("login.html", next_url=request.args.get("next", ""))
+    return render_template("login.html", next_url=request.args.get("next", ""), registration_allowed=registration_allowed())
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if not registration_allowed():
+        flash("Registration is disabled. Ask your admin for an account.", "error")
+        return redirect(url_for("login"))
+
+    if session.get("logged_in"):
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm_password", "")
+        invite_code = request.form.get("invite_code", "")
+
+        if password != confirm:
+            flash("Passwords do not match.", "error")
+        elif not valid_invite_code(invite_code):
+            flash("Invalid invite code.", "error")
+        else:
+            ok, message = create_user(username, password=password)
+            if ok:
+                flash("Account created. You can log in now.", "success")
+                return redirect(url_for("login"))
+            flash(message, "error")
+
+    return render_template("register.html")
 
 
 @app.route("/logout", methods=["POST"])
@@ -156,11 +189,14 @@ def history():
 def inject_auth():
     return {
         "auth_enabled": AUTH_ENABLED,
+        "registration_allowed": registration_allowed(),
         "current_user": session.get("username"),
     }
 
 
 if __name__ == "__main__":
     if IS_VERCEL and not AUTH_ENABLED:
-        raise SystemExit("Set WEB_AUTH_USERNAME and WEB_AUTH_PASSWORD before deploying to Vercel.")
+        raise SystemExit("Do not set DISABLE_AUTH on Vercel.")
+    if IS_VERCEL and not (WEB_AUTH_USERNAME or registration_allowed()):
+        raise SystemExit("Set WEB_AUTH_USERNAME/WEB_AUTH_PASSWORD or enable ALLOW_REGISTRATION on Vercel.")
     app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False)
