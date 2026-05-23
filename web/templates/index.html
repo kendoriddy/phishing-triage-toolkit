@@ -1,5 +1,9 @@
 {% extends "base.html" %} {% block title %}Analyze Email — Phishing Triage{%
-endblock %} {% block content %}
+endblock %} {% block content %} {% if not auth_enabled %}
+<div class="demo-banner">
+  Portfolio demo mode — open access. Try the built-in phishing sample below.
+</div>
+{% endif %}
 <section class="hero">
   <h1>Analyze Suspicious Email</h1>
   <p>

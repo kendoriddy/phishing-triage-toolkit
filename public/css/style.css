@@ -467,6 +467,17 @@ code.hash {
   color: #86efac;
 }
 
+.demo-banner {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid var(--accent);
+  color: #93c5fd;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
 .login-page {
   display: flex;
   justify-content: center;

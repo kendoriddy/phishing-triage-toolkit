@@ -24,8 +24,9 @@ from storage.ioc_db import get_recent_runs
 from storage.users_db import bootstrap_admin_from_env, create_user, init_users_db
 from web.auth import login_required, registration_allowed, valid_invite_code, verify_credentials
 
-init_users_db()
-bootstrap_admin_from_env()
+if AUTH_ENABLED:
+    init_users_db()
+    bootstrap_admin_from_env()
 
 app = Flask(
     __name__,
@@ -195,8 +196,4 @@ def inject_auth():
 
 
 if __name__ == "__main__":
-    if IS_VERCEL and not AUTH_ENABLED:
-        raise SystemExit("Do not set DISABLE_AUTH on Vercel.")
-    if IS_VERCEL and not (WEB_AUTH_USERNAME or registration_allowed()):
-        raise SystemExit("Set WEB_AUTH_USERNAME/WEB_AUTH_PASSWORD or enable ALLOW_REGISTRATION on Vercel.")
     app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False)

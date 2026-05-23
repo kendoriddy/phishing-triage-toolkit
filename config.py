@@ -38,12 +38,16 @@ WEB_AUTH_PASSWORD = os.getenv("WEB_AUTH_PASSWORD", "")
 WEB_AUTH_PASSWORD_HASH = os.getenv("WEB_AUTH_PASSWORD_HASH", "")
 WEB_API_KEY = os.getenv("WEB_API_KEY", "")
 
-# Auth is on by default; set DISABLE_AUTH=true to turn off (local dev only)
-AUTH_ENABLED = os.getenv("DISABLE_AUTH", "").lower() != "true"
+# Auth is opt-in (off by default for portfolio demos).
+# Set ENABLE_AUTH=true plus WEB_AUTH_* credentials to require login.
+_has_auth_credentials = bool(
+    WEB_AUTH_USERNAME and (WEB_AUTH_PASSWORD or WEB_AUTH_PASSWORD_HASH)
+)
+AUTH_ENABLED = os.getenv("ENABLE_AUTH", "").lower() == "true" and _has_auth_credentials
 
-# Team registration — requires invite code (no open public signup)
+# Team registration — only when auth is enabled
 ALLOW_REGISTRATION = os.getenv("ALLOW_REGISTRATION", "").lower() == "true"
-REGISTRATION_ENABLED = ALLOW_REGISTRATION
+REGISTRATION_ENABLED = ALLOW_REGISTRATION and AUTH_ENABLED
 REGISTRATION_INVITE_CODE = os.getenv("REGISTRATION_INVITE_CODE", "")
 
 DOMAIN_AGE_SUSPICIOUS_DAYS = int(os.getenv("DOMAIN_AGE_SUSPICIOUS_DAYS", "30"))
