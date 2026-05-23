@@ -1,0 +1,227 @@
+{% extends "base.html" %} {% block title %}Results — {{ report.subject[:40] }}{%
+endblock %} {% block content %}
+<section class="results-header">
+  <a href="{{ url_for('index') }}" class="back-link">← New analysis</a>
+  <h1>Triage Results</h1>
+  <p class="meta">
+    Run ID: <code>{{ report.run_id }}</code> · {{ report.time }}
+  </p>
+</section>
+
+<div class="verdict-banner verdict-{{ report.risk_level|lower }}">
+  <div class="verdict-score">{{ report.risk_score }}<span>/100</span></div>
+  <div class="verdict-text">
+    <span class="verdict-level">{{ report.risk_level }}</span>
+    <span class="verdict-label">{{ report.verdict }}</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Email Summary</h2>
+    <table class="data-table">
+      <tr>
+        <th>From</th>
+        <td>{{ report.sender }}</td>
+      </tr>
+      <tr>
+        <th>Subject</th>
+        <td>{{ report.subject }}</td>
+      </tr>
+      <tr>
+        <th>To</th>
+        <td>{{ report.to }}</td>
+      </tr>
+      <tr>
+        <th>Date</th>
+        <td>{{ report.date or 'N/A' }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Authentication</h2>
+    <table class="data-table">
+      {% for check, result in report.auth_results.items() %}
+      <tr>
+        <th>{{ check|upper }}</th>
+        <td><span class="badge badge-{{ result }}">{{ result }}</span></td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="2">No authentication headers found</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Indicators of Compromise</h2>
+  <div class="ioc-grid">
+    {% for ioc_type, values in report.iocs.items() %} {% if values %}
+    <div class="ioc-block">
+      <h3>
+        {{ ioc_type|upper }} <span class="count">({{ values|length }})</span>
+      </h3>
+      <ul>
+        {% for v in values %}
+        <li><code>{{ v }}</code></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %} {% endfor %}
+  </div>
+</div>
+
+{% if report.whois_data and report.whois_data.domains %}
+<div class="card">
+  <h2>Domain Age (WHOIS)</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Domain</th>
+        <th>Age (days)</th>
+        <th>Created</th>
+        <th>Registrar</th>
+        <th>Assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in report.whois_data.domains %}
+      <tr
+        class="{% if d.critical %}row-critical{% elif d.suspicious %}row-warning{% endif %}"
+      >
+        <td><code>{{ d.domain }}</code></td>
+        <td>{{ d.age_days if d.age_days is not none else '—' }}</td>
+        <td>{{ d.creation_date[:10] if d.creation_date else '—' }}</td>
+        <td>{{ d.registrar or '—' }}</td>
+        <td>{{ d.risk_note or d.error or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %} {% if report.yara_data and report.yara_data.matches %}
+<div class="card">
+  <h2>YARA Rule Matches ({{ report.yara_data.match_count }})</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Rule</th>
+        <th>Severity</th>
+        <th>Target</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in report.yara_data.matches %}
+      <tr
+        class="{% if m.severity == 'critical' %}row-critical{% elif m.severity == 'high' %}row-warning{% endif %}"
+      >
+        <td><code>{{ m.rule }}</code></td>
+        <td>
+          <span class="badge badge-yara-{{ m.severity }}"
+            >{{ m.severity|upper }}</span
+          >
+        </td>
+        <td>{{ m.target }}</td>
+        <td>{{ m.description }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% elif report.yara_data and not report.yara_data.available %}
+<div class="card">
+  <h2>YARA Rule Matching</h2>
+  <p class="text-muted">{{ report.yara_data.error }}</p>
+</div>
+{% endif %} {% if report.vt_data and not report.vt_data.get('error') %} {% set
+vt_has = report.vt_data.urls or report.vt_data.ips or report.vt_data.domains or
+report.vt_data.hashes %} {% if vt_has %}
+<div class="card">
+  <h2>VirusTotal Reputation</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Indicator</th>
+        <th>Malicious</th>
+        <th>Suspicious</th>
+        <th>Harmless</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in ['urls', 'ips', 'domains', 'hashes'] %} {% for r in
+      report.vt_data.get(category, []) %} {% if not r.error %}
+      <tr>
+        <td><code>{{ r.indicator or r.url }}</code></td>
+        <td class="text-danger">{{ r.malicious or 0 }}</td>
+        <td class="text-warning">{{ r.suspicious or 0 }}</td>
+        <td>{{ r.harmless or 0 }}</td>
+      </tr>
+      {% endif %} {% endfor %} {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %} {% endif %} {% if report.talos_data %} {% set talos_has =
+report.talos_data.ips or report.talos_data.domains %} {% if talos_has %}
+<div class="card">
+  <h2>Cisco Talos Reputation</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Indicator</th>
+        <th>Type</th>
+        <th>Reputation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for category in ['ips', 'domains'] %} {% for r in
+      report.talos_data.get(category, []) %} {% if not r.error %}
+      <tr>
+        <td><code>{{ r.indicator }}</code></td>
+        <td>{{ r.type }}</td>
+        <td>{{ r.reputation }}</td>
+      </tr>
+      {% endif %} {% endfor %} {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %} {% endif %} {% if report.attachments %}
+<div class="card">
+  <h2>Attachments</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Filename</th>
+        <th>Size</th>
+        <th>SHA256</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in report.attachments %}
+      <tr>
+        <td>{{ a.filename }}</td>
+        <td>{{ a.size }} bytes</td>
+        <td><code class="hash">{{ a.sha256 }}</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %} {% if report.timeline %}
+<div class="card">
+  <h2>Incident Timeline (Simulation)</h2>
+  <ol class="timeline">
+    {% for event in report.timeline %}
+    <li>{{ event }}</li>
+    {% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+<div class="actions">
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">Analyze Another</a>
+</div>
+{% endblock %}

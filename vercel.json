@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pip install -r requirements-vercel.txt",
+  "buildCommand": "echo 'Flask app ready'",
+  "functions": {
+    "web/app.py": {
+      "maxDuration": 60
+    }
+  }
+}

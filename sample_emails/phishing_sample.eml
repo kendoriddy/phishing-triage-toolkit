@@ -1,0 +1,39 @@
+Return-Path: <bounce@fake-bank-security.com>
+Received: from mail.fake-bank-security.com (192.168.1.100)
+    by mx.company.com with ESMTPS id abc123
+    for <employee@company.com>; Mon, 20 May 2024 08:00:00 -0400
+Received-SPF: fail (mail.fake-bank-security.com: domain of bounce@fake-bank-security.com does not designate 192.168.1.100 as permitted sender)
+Authentication-Results: mx.company.com;
+    dkim=fail reason="signature verification failed";
+    dmarc=fail action=none header.from=fake-bank-security.com
+From: Security Team <security@fake-bank-security.com>
+To: employee@company.com
+Subject: URGENT: Your Account Will Be Suspended - Verify Now
+Date: Mon, 20 May 2024 08:00:00 -0400
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_Part_0_123456"
+
+------=_Part_0_123456
+Content-Type: text/plain; charset="UTF-8"
+
+Dear Valued Customer,
+
+We detected unusual activity on your account. Your account will be suspended within 24 hours unless you verify your identity immediately.
+
+Click here to verify: http://malicious-login-reset.com/verify?token=abc123
+
+If you did not request this, please contact support at 192.168.1.100 or visit secure-bank-update.net.
+
+Reference hash for your ticket: a1b2c3d4e5f6789012345678901234567890abcd
+
+Thank you,
+Security Team
+
+------=_Part_0_123456
+Content-Type: application/octet-stream; name="invoice.pdf.exe"
+Content-Disposition: attachment; filename="invoice.pdf.exe"
+Content-Transfer-Encoding: base64
+
+TVqQAAMAAAAEAAAA//8AALgAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+------=_Part_0_123456--

@@ -1,0 +1,48 @@
+{% extends "base.html" %} {% block title %}History — Phishing Triage{% endblock
+%} {% block content %}
+<section class="hero">
+  <h1>Triage History</h1>
+  <p>Recent analyses stored in SQLite.</p>
+</section>
+
+{% if runs %}
+<div class="card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Timestamp</th>
+        <th>Sender</th>
+        <th>Subject</th>
+        <th>Score</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td>{{ run.id }}</td>
+        <td>{{ run.timestamp }}</td>
+        <td>{{ run.sender or '—' }}</td>
+        <td>{{ (run.subject or '—')[:50] }}</td>
+        <td>
+          <span
+            class="score-pill score-{% if run.risk_score >= 81 %}critical{% elif run.risk_score >= 51 %}high{% elif run.risk_score >= 21 %}medium{% else %}low{% endif %}"
+          >
+            {{ run.risk_score }}
+          </span>
+        </td>
+        <td>{{ run.verdict }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty-state">
+  <p>
+    No triage runs yet. <a href="{{ url_for('index') }}">Analyze an email</a> to
+    get started.
+  </p>
+</div>
+{% endif %} {% endblock %}

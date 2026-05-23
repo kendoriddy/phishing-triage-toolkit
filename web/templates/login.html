@@ -1,0 +1,35 @@
+{% extends "base.html" %} {% block title %}Login — Phishing Triage{% endblock %}
+{% block content %}
+<section class="login-page">
+  <div class="login-card card">
+    <h1>Sign in</h1>
+    <p class="login-subtitle">Phishing Triage Toolkit</p>
+
+    <form method="post" class="login-form">
+      {% if next_url %}
+      <input type="hidden" name="next" value="{{ next_url }}" />
+      {% endif %}
+      <label class="field-label" for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
+        autocomplete="username"
+        autofocus
+      />
+
+      <label class="field-label" for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        required
+        autocomplete="current-password"
+      />
+
+      <button type="submit" class="btn btn-primary">Log in</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

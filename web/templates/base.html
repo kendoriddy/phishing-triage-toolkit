@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Phishing Triage{% endblock %}</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="{{ url_for('index') }}" class="brand">
+        <span class="brand-icon">🛡</span>
+        Phishing Triage Toolkit
+      </a>
+      <div class="nav-links">
+        {% if auth_enabled and current_user %}
+        <a href="{{ url_for('index') }}">Analyze</a>
+        <a href="{{ url_for('history') }}">History</a>
+        <span class="nav-user">{{ current_user }}</span>
+        <form
+          action="{{ url_for('logout') }}"
+          method="post"
+          class="logout-form"
+        >
+          <button type="submit" class="link-button">Log out</button>
+        </form>
+        {% elif auth_enabled %}
+        <a href="{{ url_for('login') }}">Log in</a>
+        {% else %}
+        <a href="{{ url_for('index') }}">Analyze</a>
+        <a href="{{ url_for('history') }}">History</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <main class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+      Automated Phishing Triage Toolkit — IOC extraction, threat intel, risk
+      scoring
+    </footer>
+  </body>
+</html>

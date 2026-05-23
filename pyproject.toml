@@ -1,0 +1,10 @@
+[project]
+name = "phishing-triage-toolkit"
+version = "1.0.0"
+requires-python = ">=3.11"
+
+[tool.vercel]
+entrypoint = "web.app:app"
+
+[tool.vercel.scripts]
+build = "pip install -r requirements-vercel.txt"
